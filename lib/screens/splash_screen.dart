@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:final_project/global.dart';
 import 'package:final_project/models/farmer.dart';
 import 'package:final_project/widgets/loading/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/screens/theme.dart' as Theme;
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
@@ -24,7 +26,6 @@ class _SplashScreenState extends State<SplashScreen> {
   bool loginVisibility = false;
   String token = '';
   Farmer farmer;
-  final String base_url = "https://lixil.herokuapp.com/api/v1/";
 
   @override
   initState() {
@@ -38,6 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (prefs.getString("token") != null) {
       setState(() {
         token = prefs.getString("token");
+        Global.token = token;
         loadingVisibility = true;
         loginVisibility = false;
         logedIn = true;
@@ -54,12 +56,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<Farmer> getUserData(BuildContext context, String userId) async {
     try {
-      final response = await http.get(base_url + "farmers/$userId",
-          headers: {"Content-Type": "application/json",
-            HttpHeaders.authorizationHeader: token});
+      final response = await http.get(Global.baseUrl + "farmers/$userId",
+          headers: {
+            "Content-Type": "application/json",
+            HttpHeaders.authorizationHeader: token
+          });
       final int statusCode = response.statusCode;
+      print(statusCode);
+      print("hey baby");
       if (statusCode == 200) {
         farmer = Farmer.fromJson(json.decode(response.body));
+        print(response.body);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -87,9 +94,9 @@ class _SplashScreenState extends State<SplashScreen> {
             height: 50.0,
             width: 80.0,
             child: ColorLoader(
-              dotOneColor: Colors.pink,
-              dotTwoColor: Colors.amber,
-              dotThreeColor: Colors.pink,
+              dotOneColor: Colors.blueGrey[800],
+              dotTwoColor: Color(0xFF06bc86),
+              dotThreeColor: Colors.blueGrey[800],
               dotType: DotType.circle,
               duration: Duration(milliseconds: 1200),
             ),
@@ -115,17 +122,18 @@ class _SplashScreenState extends State<SplashScreen> {
               child: RaisedButton(
                   elevation: 6,
                   highlightElevation: 12,
-                  shape: new RoundedRectangleBorder(
-                      borderRadius: new BorderRadius.circular(10.0)),
-                  color: Colors.white,
+                  shape: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: BorderSide(color: Colors.blueGrey[800])),
+                  color: Colors.grey[200],
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         vertical: 10.0, horizontal: 42.0),
                     child: Text(
                       "عضویت/ورود",
                       style: TextStyle(
-                          color: Colors.green[600],
-                          fontSize: 20.0,
+                          color: Colors.blueGrey[800],
+                          fontSize: 18.0,
                           fontFamily: "IRANYekanMobile"),
                     ),
                   ),
@@ -141,21 +149,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Center(
+    return WillPopScope(
+        child: Scaffold(
+            body: Center(
           child: Container(
               alignment: FractionalOffset.center,
-              decoration: new BoxDecoration(
-                gradient: new LinearGradient(
-                    colors: [
-                      Theme.Colors.loginGradientStart,
-                      Theme.Colors.loginGradientEnd
-                    ],
-                    begin: const FractionalOffset(0.0, 0.0),
-                    end: const FractionalOffset(1.0, 1.0),
-                    tileMode: TileMode.clamp),
-              ),
+              color: Colors.white,
               child: _loadingOrLogin()),
-        ));
+        )),
+        onWillPop: () {
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+        });
   }
 }

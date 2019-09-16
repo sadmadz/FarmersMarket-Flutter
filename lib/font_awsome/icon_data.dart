@@ -16,6 +16,14 @@ class IconDataSolid extends IconData {
   );
 }
 
+class IconDataDuoTone extends IconData {
+  const IconDataDuoTone(int codePoint)
+      : super(
+    codePoint,
+    fontFamily: 'FontAwesomeDuoTone',
+  );
+}
+
 class IconDataRegular extends IconData {
   const IconDataRegular(int codePoint)
       : super(
